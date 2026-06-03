@@ -237,8 +237,16 @@ async function handleLogin() {
       const response = await callAPI('login', { username: user, password: pass });
       if (response && response.status === "success") {
         localStorage.setItem("attendanceAppUser", JSON.stringify({username: user, password: pass}));
+        
+        if (response.actionType === "dashboard") {
+          Swal.fire({ title: 'สำเร็จ!', text: 'เข้าสู่ระบบผู้บริหาร', icon: 'success', timer: 1000, showConfirmButton: false }).then(() => {
+            window.location.href = "dashboard.html"; // เปลี่ยนหน้าไป Dashboard
+          });
+          return;
+        }
+
         Swal.fire({ title: 'สำเร็จ!', text: 'เข้าสู่ระบบเรียบร้อย', icon: 'success', timer: 1500, showConfirmButton: false });
-        setupMainView(response.user, response.students, response.todayStatus, response.rooms);
+        setupMainView(response.user, response.students, response.todayStatus, response.rooms, response.actionType);
       } else {
         Swal.fire("ข้อผิดพลาด", response.message, "error");
       }
@@ -246,7 +254,7 @@ async function handleLogin() {
       Swal.fire("ข้อผิดพลาด", "เชื่อมต่อฐานข้อมูลไม่สำเร็จ: " + error.message, "error");
     }
   }
-
+  
   function handleLogout() {
     Swal.fire({
       title: 'ยืนยันการออกจากระบบ?',
@@ -288,7 +296,7 @@ async function handleLogin() {
     }
   }
 
-  function setupMainView(user, students, todayStatus, rooms) {
+  function setupMainView(user, students, todayStatus, rooms, actionType) {
     document.getElementById("login-view").classList.remove("flex");
     document.getElementById("login-view").classList.add("hidden");
     document.getElementById("main-view").classList.remove("hidden");
@@ -296,7 +304,8 @@ async function handleLogin() {
     document.getElementById("user-name-display").innerText = user.name;
     const roomDisplay = document.getElementById("room-display");
 
-    if (user.room === "ครูประจำวิชา") {
+    // ใช้ actionType ที่เซิร์ฟเวอร์ส่งมา แทนการเช็คชื่อห้อง
+    if (actionType === "select_room") {
       currentUserRoom = "";
       studentDataList = [];
 
