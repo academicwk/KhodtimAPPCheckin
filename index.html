@@ -197,7 +197,11 @@ async function checkLocalSession() {
         const response = await callAPI('login', { username: u.username, password: u.password });
         Swal.close();
         if (response && response.status === "success") {
-          setupMainView(response.user, response.students, response.todayStatus, response.rooms);
+          if (response.actionType === "dashboard") {
+            window.location.href = "dashboard.html"; // เปลี่ยนหน้าไป Dashboard
+            return;
+          }
+          setupMainView(response.user, response.students, response.todayStatus, response.rooms, response.actionType);
         } else {
           localStorage.removeItem("attendanceAppUser");
           showLoginView();
@@ -207,6 +211,10 @@ async function checkLocalSession() {
         showLoginView();
       }
     } else {
+      Swal.close();
+      showLoginView();
+    }
+  }
       Swal.close();
       showLoginView();
     }
