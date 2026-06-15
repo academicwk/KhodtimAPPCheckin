@@ -9,7 +9,9 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
   
   <style>
     body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
@@ -76,8 +78,13 @@
   </div>
 
   <script>
+    // ลงทะเบียน Plugin สำหรับแสดงตัวเลขบนกราฟ
+    Chart.register(ChartDataLabels);
+
     // ตัวแปรเก็บกราฟทั้งหมดที่เปิดใช้งาน เพื่อลบทิ้งก่อนวาดใหม่เมื่อเปลี่ยนวัน
     let activeCharts = [];
+
+    const API_URL = "https://script.google.com/macros/s/AKfycbxQY93WwudLzvhP4cKn0-uxSg5Jh390j3Ju7AygHyD96V5yd0ulZ-DWQJt8gEeeJmv8/exec";
 
     document.addEventListener("DOMContentLoaded", () => {
       fetchAvailableDates();
@@ -190,14 +197,26 @@
                   return ` ${context.label}: ${value} คน (${percentage})`;
                 }
               }
+            },
+            // ตั้งค่า Plugin ให้แสดงตัวเลข
+            datalabels: {
+              display: dataObj.all > 0, // ซ่อนตัวเลขถ้าไม่มีข้อมูล
+              color: '#ffffff', // ตัวอักษรสีขาว
+              font: {
+                weight: 'bold',
+                family: 'Sarabun',
+                size: isMainChart ? 16 : 12 // กราฟใหญ่ตัวหนังสือใหญ่ กราฟเล็กตัวหนังสือเล็ก
+              },
+              formatter: (value, context) => {
+                // แสดงเฉพาะค่าที่มากกว่า 0 เพื่อไม่ให้เลข 0 ไปรกกราฟ
+                return value > 0 ? value : ''; 
+              }
             }
           }
         }
       });
       activeCharts.push(chart);
     }
-
-    const API_URL = "https://script.google.com/macros/s/AKfycbxQY93WwudLzvhP4cKn0-uxSg5Jh390j3Ju7AygHyD96V5yd0ulZ-DWQJt8gEeeJmv8/exec";
 
     async function loadDashboard() {
       const dateInput = document.getElementById('date-input');
